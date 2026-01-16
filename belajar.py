@@ -33,6 +33,15 @@ with st.sidebar:
     google_api_key = st.text_input("🔑 Enter Google API Key", type="password", key="input_widget")
     st.session_state["api_key"] = google_api_key
 
+    # Language Selection Widget
+    # This variable stores the user's choice to be injected into the system prompt later
+    target_language = st.selectbox(
+        "🌐 Response Language",          # Label with an icon for better visibility
+        options=["English", "Indonesian"], # List of available languages for the AI's output
+        index=0,                         # Default to "English" (index 0) to ensure the prompt is never empty/None
+        help="The AI will answer your questions in this selected language, regardless of the document's language." # Tooltip to explain functionality
+    )
+
     # Button to clear history
     st.button("🔄 Clear Conversation", on_click=reset_state)
 
@@ -51,6 +60,65 @@ with st.sidebar:
         st.success(f"✅ {len(uploaded_files)} File(s) Ready for Analysis")
     else:
         st.info("ℹ️ Please upload files to begin.")
+
+    st.divider()
+
+    # --- 1. HOW TO USE  ---
+    with st.expander("📖 How to Use"):
+        st.markdown(
+            """
+            **Step 1: System Setup**
+            Get your API Key from Google AI Studio and enter it securely above.
+            
+            **Step 2: Upload Documents**
+            Upload PDF, TXT, or MD files.   
+            *Tip: You can upload multiple files to create a comprehensive knowledge base.*  
+            *⚠️ Recommendation: Upload 1-5 files at a time to ensure optimal speed and avoid timeouts. Exceeding this limit may cause the application to freeze or fail to process the request.*
+            
+            **Step 3: Select Language**
+            Choose "Indonesian" or "English" for the AI's response language.
+            
+            **Step 4: Start Chatting**
+            Ask questions about specific details, summaries, or comparisons between files.
+            
+            **Step 5: Switching Topics (Crucial!)**
+            When moving to a new subject (e.g., from Law to Biology):
+            1. Remove old files (click 'x' on file).
+            2. **Click 'Reset Conversation'**.
+            3. Upload new files.
+              
+            *Why Reset?* Deleting files is not enough. The AI still remembers the **Chat History**. If you don't reset, it will hallucinate information from the deleted files.  
+            *Why Start Fresh?* Mixing unrelated files (e.g., Law + Math) confuses the model, wastes tokens/energy, and slows down the app.
+
+            **💡 Pro Tips:**
+            * *Specific:* "Summarize the methodology in the PDF."
+            * *Comparative:* "What is the difference between file A and file B?"
+            * *Study Aid:* "Generate 10 practice questions with answers to test my understanding."
+            * *Clean Slate:* Always click **Reset Conversation** when switching topics!
+            """
+        )
+
+    # --- 2. FAQ (FORMATTED MARKDOWN) ---
+    with st.expander("❓ FAQ"):
+        st.markdown(
+            """
+            **Q: Why does it discuss old/deleted files?**  
+            A: The AI remembers the *entire conversation history*. If you upload new files but don't clear the history, the AI might still refer to the old context.
+            **Solution:** Always click the **"🔄 Clear Conversation"** button when starting a new topic or switching files.
+
+            **Q: Is my API Key safe?**  
+            A: Yes. It is processed in temporary session memory and is never stored on any server/database.
+
+            **Q: Why is it sometimes slow?**  
+            A: This app uses a "Full Context" method. It re-reads every page of your documents for *every* question to ensure maximum accuracy (no hallucination).
+
+            **Q: Can I upload scanned PDFs?**  
+            A: Yes, Gemini 2.5 Flash has Vision capabilities and can read text from images/scans.
+
+            **Q: What is the file size limit?**  
+            A: Streamlit defaults to 200MB per file, which is sufficient for most large e-books or reports.
+            """
+        )
 
 # Warning if API Key is missing to prevent errors
 if not st.session_state["api_key"]:
@@ -146,15 +214,22 @@ if prompt_text:
             st.write("⚡ Gemini 2.5 Flash is thinking...")
             
             # Optimized System Instruction for Document Analysis role
-            system_instruction = """
+            system_instruction = f"""
             You are a highly capable Document Analysis AI.
             
             CORE INSTRUCTIONS:
             1. GROUNDING: Answer the user's question using ONLY the information found in the provided documents.
-            2. CITATION: If the answer is found, mention which file it came from (e.g., "According to report.pdf...").
+            2. CITATION: Always mention the source file name (e.g., [Source: file.pdf]) to back up your claims.
             3. LIMITATION: If the answer is NOT in the documents, explicitly state: "I cannot find that information in the provided documents." Do not hallucinate.
             4. TONE: Professional, technical, and concise.
-            5. CONTEXT: Use the 'Conversation History' to understand follow-up questions (e.g., "What about the second point?").
+            5. CONTEXT: Use the 'Conversation History' to understand follow-up questions.
+            
+            6. ***CRITICAL LANGUAGE RULE***: 
+            The user explicitly selected to receive answers in: **{target_language}**.
+            - **IGNORE** the language of the user's question.
+            - **IGNORE** the language of the provided documents.
+            - You MUST translate your thought process and final answer entirely into **{target_language}**.
+            - Example: If the user asks in English but {target_language} is 'Indonesian', you MUST answer in Indonesian.
             """
 
             # Define Safety Settings to prevent the model from blocking valid content unnecessarily

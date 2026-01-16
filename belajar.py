@@ -69,12 +69,12 @@ with st.sidebar:
             """
             **Step 1: System Setup**
             Get your API Key from Google AI Studio and enter it securely above.
-            
+
             **Step 2: Upload Documents**
             Upload PDF, TXT, or MD files.   
             *Tip: You can upload multiple files to create a comprehensive knowledge base.*  
-            *⚠️ Recommendation: Upload 1-5 files at a time to ensure optimal speed and avoid timeouts. Exceeding this limit may cause the application to freeze or fail to process the request.*
-            
+            *⚠️ Recommendation: Upload 1-5 files at a time to ensure optimal speed and avoid timeouts. Exceeding this limit may cause the application to freeze or fail to process the request, rapidly drain your token quota, and confuse the LLM (especially if the topics are different). Stick to focused batches of documents.*
+
             **Step 3: Select Language**
             Choose "Indonesian" or "English" for the AI's response language.
             
@@ -102,6 +102,9 @@ with st.sidebar:
     with st.expander("❓ FAQ"):
         st.markdown(
             """
+            **Q: What is an LLM?**  
+            A: LLM (Large Language Model) is an AI trained on massive amounts of text to understand and generate human-like language. This app uses Google's **Gemini 2.5 Flash** model to analyze your documents.
+
             **Q: Why does it discuss old/deleted files?**  
             A: The AI remembers the *entire conversation history*. If you upload new files but don't clear the history, the AI might still refer to the old context.
             **Solution:** Always click the **"🔄 Clear Conversation"** button when starting a new topic or switching files.

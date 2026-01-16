@@ -47,7 +47,7 @@ While this method provides superior accuracy, it comes with trade-offs:
 
 1.  **Clone the Repository**
     ```bash
-    git clone [https://github.com/viochris/Gemini-Long-Context-Chat.git](https://github.com/viochris/Gemini-Long-Context-Chat.git)
+    git clone https://github.com/viochris/Gemini-Long-Context-Chat.git
     cd Gemini-Long-Context-Chat
     ```
 

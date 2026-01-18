@@ -30,7 +30,7 @@ with st.sidebar:
     st.header("⚙️ System Configuration")
 
     # Securely capture API Key
-    google_api_key = st.text_input("🔑 Enter Google API Key", type="password", key="input_widget")
+    google_api_key = st.text_input("🔑 Enter Google API Key", type="password")
     st.session_state["api_key"] = google_api_key
 
     # Language Selection Widget
@@ -294,10 +294,38 @@ if prompt_text:
             answer = full_text
                 
     except Exception as e:
-        # Error Handling: If anything goes wrong, display it clearly
-        answer = f"⚠️ System Error: {e}"
-        status.update(label="❌ Process Failed", state="error", expanded=False)
-        st.error(answer)
+        error_msg = str(e)
+
+        # Update the status container to show failure (red)
+        try:
+            status.update(label="❌ Process Failed", state="error", expanded=True)
+        except:
+            pass
+
+        # 1. Handle API Quota Limits (429 / Resource Exhausted)
+        if "429" in error_msg or "Quota exceeded" in error_msg or "Resource exhausted" in error_msg:
+            answer = "🚨 **API Quota Exceeded**\n\nI cannot complete this request because the Google Gemini API limit has been reached.\n\n**Solution:** Please wait a minute before trying again."
+            st.error(answer)
+
+        # 2. Handle Invalid API Key (403 / 400)
+        elif "API key not valid" in error_msg or "403" in error_msg or "Permission denied" in error_msg:
+            answer = "🔑 **Invalid API Key**\n\nAccess denied. Please check if the Google API Key entered in the sidebar is correct."
+            st.error(answer)
+
+        # 3. Handle Safety Filters (If the entire request is blocked)
+        elif "finish_reason" in error_msg and "SAFETY" in error_msg:
+             answer = "🛡️ **Safety Restriction**\n\nThe AI refused to generate a response because the content (either the PDF or the Question) triggered Google's safety filters."
+             st.warning(answer)
+        
+        # 4. Handle Empty/Corrupt PDF Data errors
+        elif "image bytes" in error_msg or "mime_type" in error_msg:
+             answer = "📂 **File Error**\n\nOne of the uploaded files appears to be corrupted or has an unsupported format. Please try uploading a standard PDF or Text file."
+             st.error(answer)
+
+        # 5. Handle General Errors
+        else:
+            answer = f"❌ **System Error Occurred**\n\n**Details:** `{error_msg}`"
+            st.error(answer)
 
     # Save AI Response to Session State History
     st.session_state["message"].append({"role": "ai", "content": answer})

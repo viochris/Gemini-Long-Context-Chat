@@ -115,5 +115,5 @@ The application includes a built-in **Help Center (How to Use & FAQ)** located a
 *Once processing is complete, the status turns green ("Insight Generated") and displays the exact **Input Token Count**, giving users full visibility into API usage.*
 
 ---
-**Author:** [Silvio Christian, Joe]
+**Author:** [Silvio Christian, Joe](https://www.linkedin.com/in/silvio-christian-joe)
 *"Sometimes, the best retrieval strategy is to just read everything."*

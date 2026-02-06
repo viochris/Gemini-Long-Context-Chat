@@ -62,7 +62,7 @@ While this method provides superior accuracy, it comes with trade-offs:
 
 3.  **Run the Application**
     ```bash
-    streamlit run app.py
+    streamlit run belajar.py
     ```
 
 ## 🚀 Usage Guide
